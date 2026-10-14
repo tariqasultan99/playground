@@ -7,7 +7,7 @@ type Status = "idle" | "processing" | "paid";
 
 // How long each step lasts before moving on (ms).
 const PROCESSING_MS = 1800; // simulated payment
-const PAID_MS = 4000; // success is shown, then the button resets
+const PAID_MS = 2000; // success is shown, then the button resets
 
 // Same spring as the dock: ~0.24s with a light bounce. Drives the width change.
 const SPRING: Transition = { type: "spring", visualDuration: 0.24, bounce: 0.27 };
