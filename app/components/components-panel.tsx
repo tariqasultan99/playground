@@ -34,7 +34,8 @@ export function ComponentsPanel({
             }
             style={{ borderRadius: 28 }}
         >
-            <h2 className="mb-1 flex h-11 items-center justify-center text-[13px] font-semibold uppercase tracking-wide text-[var(--dock-fg-muted)]">
+            {/* Left-aligned, with the same 16px inset as the rows so it lines up with their icons. */}
+            <h2 className="mb-1 flex h-11 items-center justify-start px-4 text-[13px] font-semibold uppercase tracking-wide text-[var(--dock-fg-muted)]">
                 Components
             </h2>
             <ul className="flex flex-col gap-0.5">
