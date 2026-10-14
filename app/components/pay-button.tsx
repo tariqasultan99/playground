@@ -46,7 +46,11 @@ export function PayButton() {
                 // Pressed: a small squeeze, only while it can be clicked.
                 whileTap={busy ? undefined : { scale: 0.97 }}
                 className={
-                    "relative flex h-12 items-center justify-center overflow-hidden px-6 " +
+                    "relative flex h-12 items-center justify-center overflow-hidden " +
+                    // With a leading icon the sides are tuned by eye, not by number: the solid
+                    // round icon reads heavier than the text, so its side is 2px tighter
+                    // (20px vs 22px). Measured on screen, the visible gaps are ~20 and ~22.3.
+                    (busy ? "pr-[22px] pl-5 " : "px-6 ") +
                     "text-[15px] font-semibold outline-none transition-colors duration-300 " +
                     "focus-visible:ring-2 focus-visible:ring-[var(--dock-ring)] focus-visible:ring-offset-2 " +
                     "focus-visible:ring-offset-[var(--background)] " +
@@ -88,35 +92,45 @@ function Spinner() {
         <svg
             aria-hidden="true"
             viewBox="0 0 24 24"
-            className="size-4 animate-spin motion-reduce:animate-[spin_3s_linear_infinite]"
+            // Same 18px box as the check badge, and the ring fills it, so both steps line up.
+            className="size-[18px] animate-spin motion-reduce:animate-[spin_3s_linear_infinite]"
             fill="none"
             strokeWidth={2.5}
             strokeLinecap="round"
         >
-            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity={0.25} />
-            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" />
+            <circle cx="12" cy="12" r="10.5" stroke="currentColor" strokeOpacity={0.25} />
+            <path d="M22.5 12A10.5 10.5 0 0 0 12 1.5" stroke="currentColor" />
         </svg>
     );
 }
 
+// A solid white circle with a green tick inside. The circle fills its whole box, so there is
+// no empty space beside it to throw off the padding.
 function Check() {
     return (
-        <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="size-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="size-[18px]">
+            <motion.circle
+                cx="12"
+                cy="12"
+                r="12"
+                fill="white"
+                // The badge pops in, then the tick draws itself.
+                initial={{ scale: 0.4, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={SPRING}
+                style={{ transformOrigin: "center", transformBox: "fill-box" }}
+            />
             <motion.path
-                d="M5 12.5l4.5 4.5L19 7.5"
-                // The tick draws itself in.
+                d="M7 12.4l3.3 3.3L17 9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-green-600"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ duration: 0.28, delay: 0.08, ease: "easeOut" }}
+                transition={{ duration: 0.26, delay: 0.12, ease: "easeOut" }}
             />
         </svg>
     );
