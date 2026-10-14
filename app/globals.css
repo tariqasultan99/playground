@@ -1,8 +1,22 @@
 @import "tailwindcss";
 
+/* `dark:` utilities follow the explicit theme on <html>, set by the switch (or the system
+   preference, applied by the inline script in layout.tsx before first paint). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Dock */
+  --dock-bg: rgb(255 255 255 / 0.88);
+  --dock-fg: #18181b;
+  --dock-fg-muted: #71717a;
+  --dock-hover: rgb(24 24 27 / 0.06);
+  --dock-active: rgb(24 24 27 / 0.08); /* current-page row in the menu */
+  --dock-border: rgb(24 24 27 / 0.08);
+  --dock-ring: #1d2feb;
 }
 
 @theme inline {
@@ -12,10 +26,36 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark tokens: chosen explicitly via the switch, or by the system when nothing is chosen. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* Dock */
+  --dock-bg: rgb(28 28 31 / 0.88);
+  --dock-fg: #fafafa;
+  --dock-fg-muted: #a1a1aa;
+  --dock-hover: rgb(250 250 250 / 0.08);
+  --dock-active: rgb(250 250 250 / 0.1);
+  --dock-border: rgb(250 250 250 / 0.1);
+  --dock-ring: #7c87f5;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
+    color-scheme: dark;
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* Dock */
+    --dock-bg: rgb(28 28 31 / 0.88);
+    --dock-fg: #fafafa;
+    --dock-fg-muted: #a1a1aa;
+    --dock-hover: rgb(250 250 250 / 0.08);
+    --dock-active: rgb(250 250 250 / 0.1);
+    --dock-border: rgb(250 250 250 / 0.1);
+    --dock-ring: #7c87f5;
   }
 }
 
