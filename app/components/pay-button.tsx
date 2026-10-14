@@ -62,6 +62,11 @@ export function PayButton() {
                 // Inline radius so the layout animation keeps it a true pill while resizing.
                 style={{ borderRadius: 9999 }}
             >
+                {/* Background wave while processing (skipped when reduced motion is on). */}
+                <AnimatePresence>
+                    {status === "processing" && !reduceMotion && <Wave key="wave" />}
+                </AnimatePresence>
+
                 <AnimatePresence mode="popLayout" initial={false}>
                     <motion.span
                         key={status}
@@ -70,7 +75,7 @@ export function PayButton() {
                         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                         exit={{ opacity: 0, y: -8, filter: "blur(2px)" }}
                         transition={{ duration: 0.16, ease: "easeOut" }}
-                        className="flex items-center gap-2 whitespace-nowrap"
+                        className="relative z-10 flex items-center gap-2 whitespace-nowrap"
                     >
                         {status === "processing" && <Spinner />}
                         {status === "paid" && <Check />}
@@ -84,6 +89,44 @@ export function PayButton() {
                 {status === "idle" ? "" : status === "processing" ? "Processing payment" : "Paid"}
             </span>
         </>
+    );
+}
+
+// A soft band with wavy edges that rolls across the button from left to right, on repeat.
+// It is tinted with the label colour, so it shows on the dark (light mode) and the light
+// (dark mode) button alike.
+function Wave() {
+    return (
+        <motion.span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+        >
+            <motion.svg
+                viewBox="0 0 64 48"
+                preserveAspectRatio="none"
+                className="absolute inset-y-0 left-0 h-full w-[70%]"
+                // From fully off the left edge to fully off the right edge (button = 1/0.7 bands).
+                initial={{ x: "-100%" }}
+                animate={{ x: "145%" }}
+                transition={{ duration: 1.4, ease: [0.45, 0, 0.55, 1], repeat: Infinity }}
+            >
+                <defs>
+                    <linearGradient id="pay-wave" x1="0" x2="1" y1="0" y2="0">
+                        <stop offset="0" stopColor="currentColor" stopOpacity="0" />
+                        <stop offset="0.7" stopColor="currentColor" stopOpacity="0.16" />
+                        <stop offset="1" stopColor="currentColor" stopOpacity="0.05" />
+                    </linearGradient>
+                </defs>
+                {/* Wavy trailing and leading edges; the brighter crest leads on the right. */}
+                <path
+                    fill="url(#pay-wave)"
+                    d="M10 0C3 8 17 16 10 24S3 40 10 48H54C61 40 47 32 54 24S61 8 54 0Z"
+                />
+            </motion.svg>
+        </motion.span>
     );
 }
 
