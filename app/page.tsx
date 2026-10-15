@@ -5,6 +5,7 @@ import { useState } from "react";
 import { type ComponentId, ComponentsPanel } from "./components/components-panel";
 import { ExpandingDock, labelFor } from "./components/expanding-dock";
 import { PayButton } from "./components/pay-button";
+import { SoundSwitch } from "./components/sound-switch";
 import { ThemeSwitch } from "./components/theme-switch";
 
 // Opacity only: a transform or filter here would make the dock's `position: fixed` follow this
@@ -23,6 +24,7 @@ export default function Home() {
     <MotionConfig reducedMotion="user">
       <main className="flex flex-1 flex-col items-center justify-center gap-2 bg-zinc-50 px-4 pb-32 font-sans dark:bg-black">
         <ComponentsPanel active={component} onSelect={setComponent} />
+        <SoundSwitch className="fixed top-4 right-[92px]" />
         <ThemeSwitch className="fixed top-4 right-4" />
 
         <AnimatePresence mode="wait" initial={false}>

@@ -12,6 +12,8 @@ import {
     type Variants,
 } from "motion/react";
 import { type ReactNode, type Ref, useEffect, useLayoutEffect, useRef, useState } from "react";
+// Loads the project-wide hover and click sounds.
+import "./sound";
 
 /* ------------------------------------------------------------------ */
 /* Icons: outline by default, filled when active                       */
@@ -642,7 +644,7 @@ function DockButton({
                 onHideTip();
                 onClick();
             }}
-            // Mouse hover only (a tap shouldn't flash it), plus keyboard focus.
+            // Mouse hover only (a tap shouldn't flash it or tick), plus keyboard focus.
             onPointerEnter={(e) => e.pointerType === "mouse" && onShowTip(e.currentTarget, label)}
             onFocus={(e) =>
                 e.currentTarget.matches(":focus-visible") && onShowTip(e.currentTarget, label)
