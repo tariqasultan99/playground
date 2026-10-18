@@ -5,6 +5,7 @@ import { useState } from "react";
 import { type ComponentId, ComponentsPanel } from "./components/components-panel";
 import { ExpandingDock, labelFor } from "./components/expanding-dock";
 import { PayButton } from "./components/pay-button";
+import { ResizablePanel } from "./components/resizable-panel";
 import { SoundSwitch } from "./components/sound-switch";
 import { ThemeSwitch } from "./components/theme-switch";
 
@@ -36,10 +37,16 @@ export default function Home() {
               </h1>
               <ExpandingDock active={active} onSelect={setActive} />
             </motion.div>
-          ) : (
+          ) : component === "button" ? (
             <motion.div key="button" {...fade} className="flex flex-col items-center gap-6">
               <h1 className="sr-only">Button</h1>
               <PayButton />
+            </motion.div>
+          ) : (
+            // Left padding keeps the frame clear of the fixed Components panel (16px + 224px).
+            <motion.div key="panel" {...fade} className="w-full max-w-[1200px] pt-16 pl-60">
+              <h1 className="sr-only">Side panel</h1>
+              <ResizablePanel />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,10 +1,11 @@
 "use client";
 
-export type ComponentId = "dock" | "button";
+export type ComponentId = "dock" | "button" | "panel";
 
 export const COMPONENTS: { id: ComponentId; label: string }[] = [
     { id: "dock", label: "Bottom dock" },
     { id: "button", label: "Button" },
+    { id: "panel", label: "Side panel" },
 ];
 
 // Same row recipe as the dock's menu rows: muted by default, hover tint, subtle active fill.
@@ -82,6 +83,19 @@ function ComponentIcon({ id, filled }: { id: ComponentId; filled: boolean }) {
                         y="15"
                         width="11"
                         height="3"
+                        rx="1.5"
+                        fill={filled ? "currentColor" : "none"}
+                    />
+                </>
+            ) : id === "panel" ? (
+                <>
+                    {/* A frame with a panel docked on the right. */}
+                    <rect x="3" y="3" width="18" height="18" rx="4" />
+                    <rect
+                        x="13"
+                        y="6"
+                        width="5"
+                        height="12"
                         rx="1.5"
                         fill={filled ? "currentColor" : "none"}
                     />
