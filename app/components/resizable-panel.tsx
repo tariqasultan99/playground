@@ -47,8 +47,23 @@ const SETTLE_MS = 120; // straighten once the pointer stops moving
 // Soft enough to ease into the bend, with a little wobble as it straightens.
 const RUBBER = { stiffness: 280, damping: 18, mass: 0.6 };
 
+// Pulled past 25% / 50%, the panel stretches a little further, resisting more the further it
+// goes, and springs back to the limit on release.
+const STRETCH_MAX = 12; // px it can never stretch beyond
+const STRETCH_GIVE = 0.55; // how freely it gives at first (the same feel as iOS overscroll)
+
+// Side panel corners: 20 = frame radius 28 − 8px padding, so the curves nest. While stretched,
+// the left corners tighten as it's pulled wider and round off as it's squeezed narrower.
+const PANEL_RADIUS = 20;
+// Left corners at the fullest stretch.
+const RADIUS_SQUEEZED = 28; // at the 25% min
+const RADIUS_STRETCHED = 14; // at the 50% max
+
 const clamp = (value: number) => Math.min(MAX, Math.max(MIN, value));
 const clampBend = (value: number) => Math.min(MAX_BEND, Math.max(-MAX_BEND, value));
+// How far (px) the panel stretches when the pointer is `pulled` px past a limit.
+const stretchFor = (pulled: number) =>
+    (1 - 1 / ((pulled * STRETCH_GIVE) / STRETCH_MAX + 1)) * STRETCH_MAX;
 
 // Springs to `value`, or jumps straight there when the visitor prefers reduced motion.
 function animateTo(motionValue: MotionValue<number>, value: number, instant: boolean | null) {
@@ -86,6 +101,8 @@ export function ResizablePanel() {
     const border = useSpring(CAPSULE_BORDER, SPRING_OPTIONS);
     const side = useSpring(0, SPRING_OPTIONS); // px from the border's centre
     const bend = useSpring(0, RUBBER); // px the middle bows out, positive = right
+    // The panel's left corners: follow the stretch directly, spring back on release.
+    const leftRadius = useSpring(PANEL_RADIUS, SPRING_OPTIONS);
 
     // A vertical stroke with round caps: the caps add half the stroke width at each end, so the
     // straight part is the height minus the width. The curve's control point sits at twice the
@@ -152,6 +169,9 @@ export function ResizablePanel() {
 
     function endDrag() {
         clearTimeout(settleTimer.current);
+        // Springs back from any stretch past the limit (the panel animates when not dragging).
+        setWidth(clamp);
+        animateTo(leftRadius, PANEL_RADIUS, reduceMotion);
         setDragging(false);
         setMoving(false);
         setAtLimit(false);
@@ -174,7 +194,7 @@ export function ResizablePanel() {
                 <div className="h-3 w-1/2 rounded-full bg-[var(--dock-hover)]" />
             </div>
 
-            {/* Side panel. Corner radius 20 = frame radius 28 − 8px padding, so the curves nest. */}
+            {/* Side panel. */}
             <motion.aside
                 id={panelId}
                 aria-label="Side panel"
@@ -185,7 +205,12 @@ export function ResizablePanel() {
                     "relative flex shrink-0 flex-col gap-3 border border-[var(--panel-border)] " +
                     "bg-[var(--panel-surface)] p-5 text-[var(--dock-fg)]"
                 }
-                style={{ borderRadius: 20 }}
+                style={{
+                    borderTopLeftRadius: leftRadius,
+                    borderBottomLeftRadius: leftRadius,
+                    borderTopRightRadius: PANEL_RADIUS,
+                    borderBottomRightRadius: PANEL_RADIUS,
+                }}
             >
                 {/* Resize handle, centred on the panel's left border: a 12px-wide hit area with a
                     small capsule in the middle. Arrow keys, Home and End resize it from the
@@ -198,8 +223,8 @@ export function ResizablePanel() {
                     aria-orientation="vertical"
                     aria-valuemin={MIN}
                     aria-valuemax={MAX}
-                    aria-valuenow={Math.round(width)}
-                    aria-valuetext={`${Math.round(width)}% wide`}
+                    aria-valuenow={Math.round(clamp(width))}
+                    aria-valuetext={`${Math.round(clamp(width))}% wide`}
                     data-dragging={dragging || undefined}
                     onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(true)}
                     onPointerLeave={() => setHovered(false)}
@@ -221,7 +246,16 @@ export function ResizablePanel() {
                         if (!dragging) return;
                         const wanted = widthAt(e.clientX) - grabOffset.current;
                         const next = clamp(wanted);
-                        setWidth(next);
+                        // Past a limit: stretch a little beyond it, with growing resistance.
+                        const edges = frameEdges();
+                        const frameWidth = edges ? edges.right - edges.left : 0;
+                        const pulled = ((wanted - next) / 100) * frameWidth; // + wider, − narrower
+                        const stretchPx = Math.sign(pulled) * stretchFor(Math.abs(pulled));
+                        setWidth(next + (frameWidth ? (stretchPx / frameWidth) * 100 : 0));
+                        // Left corners: tighter when stretched wider, rounder when squeezed.
+                        const amount = Math.abs(stretchPx) / STRETCH_MAX; // 0 at the limit, 1 fully stretched
+                        const fullRadius = stretchPx > 0 ? RADIUS_STRETCHED : RADIUS_SQUEEZED;
+                        leftRadius.jump(PANEL_RADIUS + (fullRadius - PANEL_RADIUS) * amount);
                         const moved = e.clientX - lastX.current;
                         lastX.current = e.clientX;
                         if (moved === 0) return;
@@ -335,7 +369,7 @@ export function ResizablePanel() {
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="truncate text-[15px] font-semibold">Side panel</h2>
                     <span className="text-[13px] font-medium tabular-nums text-[var(--dock-fg-muted)]">
-                        {Math.round(width)}%
+                        {Math.round(clamp(width))}%
                     </span>
                 </div>
                 <div className="h-3 w-3/4 rounded-full bg-[var(--dock-active)]" />
